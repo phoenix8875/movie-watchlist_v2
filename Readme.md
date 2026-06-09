@@ -4,7 +4,7 @@ A production-grade, containerized **Three-Tier Movie Watchlist application** aut
 
 This repository demonstrates the transition from an open public-mesh architecture to a secure **Reverse Proxy Pattern**. By locking down the application tier and database layer within an isolated internal virtual network, the system exposes only a single hardened entry point **(Port 80)** to the public internet.
 
-![App Preview](.\ss\preview_live.gif)
+![App Preview](ss/preview_live.gif)
 
 ---
 
@@ -130,7 +130,7 @@ Build images, create the network layer, and spin up all containers in the backgr
 docker compose up -d --build
 ```
 
-![Compose Build Success](.\ss\compose_build.png)
+![Compose Build Success](ss/compose_build.png)
 
 ---
 
@@ -142,7 +142,7 @@ docker compose up -d --build
 docker compose ps
 ```
 
-![Docker Compose PS](.\ss\compose_ps.png)
+![Docker Compose PS](ss/compose_ps.png)
 
 **Stream live backend logs through the reverse proxy:**
 
