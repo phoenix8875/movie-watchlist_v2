@@ -2,7 +2,7 @@
 
 A production-grade, containerized **Three-Tier Movie Watchlist application** automated with Docker Compose and deployed on an AWS EC2 instance.
 
-This repository demonstrates the transition from an open public-mesh architecture to a secure **Reverse Proxy Pattern**. By locking down the application tier and database layer within an isolated internal virtual network, the system exposes only a single hardened entry point **(Port 80)** to the public internet.
+This repository demonstrates the3 tier Docker app explaining connectivity between tiers-> postgres, frontend and backend.
 
 ![App Preview](ss/preview_live.gif)
 
