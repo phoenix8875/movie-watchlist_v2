@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # 1. Database Tier (Internal Only)
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    networks:
+      - watchlist-net
+    env_file:
+      - db/.env
+
+  # 2. Backend API Tier (Internal Only - Port 5000 is closed to the public)
+  watchlist-backend:
+    build: ./backend
+    container_name: watchlist-backend
+    networks:
+      - watchlist-net
+    depends_on:
+      - postgres-db
+
+  # 3. Frontend Tier & Reverse Proxy Gateway (Port 80 is public)
+  watchlist-frontend:
+    build: ./frontend
+    container_name: watchlist-frontend
+    ports:
+      - "80:80"
+    networks:
+      - watchlist-net
+    depends_on:
+      - watchlist-backend
+
+networks:
+  watchlist-net:
+    driver: bridge
