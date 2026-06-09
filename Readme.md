@@ -108,8 +108,8 @@ Since Nginx handles all public interface tasks, minimize your EC2 Inbound Securi
 ### Step 1 — Clone and Navigate
 
 ```bash
-git clone <your-repository-url>
-cd movie-watchlist
+git clone [<your-repository-url>](https://github.com/phoenix8875/movie-watchlist_v2.git)
+cd movie-watchlist_v2
 ```
 
 ### Step 2 — Set Up Database Credentials
