@@ -4,9 +4,7 @@ A production-grade, containerized **Three-Tier Movie Watchlist application** aut
 
 This repository demonstrates the transition from an open public-mesh architecture to a secure **Reverse Proxy Pattern**. By locking down the application tier and database layer within an isolated internal virtual network, the system exposes only a single hardened entry point **(Port 80)** to the public internet.
 
-
-![App Demo](ss\preview_live.gif)
-
+![App Preview](.\ss\preview_live.gif)
 
 ---
 
@@ -14,10 +12,31 @@ This repository demonstrates the transition from an open public-mesh architectur
 
 The application workspace operates on a dual-pane layout: a dynamic movie management portal on the left, and an interactive structural infrastructure map on the right.
 
+### Network Topology
+
+```
+         [ CLIENT BROWSER ]
+                │
+                ▼ (Public Internet Traffic)
+  ┌─────────── Host Port 80 ───────────┐
+  │  watchlist-frontend (Nginx Proxy)  │  ◄── Exposes Only 1 Public Gateway
+  └─────────────────┬──────────────────┘
+                    │
+                    ▼ (Private Docker Subnet: watchlist-net)
+  ┌────────── Container Port 5000 ─────┐
+  │    watchlist-backend (Node API)    │  ◄── Host Port CLOSED to Internet
+  └─────────────────┬──────────────────┘
+                    │
+                    ▼ (Private Docker Subnet: watchlist-net)
+  ┌────────── Container Port 5432 ─────┐
+  │       postgres-db (Database)       │  ◄── Host Port CLOSED to Internet
+  └────────────────────────────────────┘
+```
+
 ### The Secure Request Lifecycle
 
 | Step | Description |
-|------|-------------|
+|:-----|:------------|
 | **1 — Asset Delivery** | The user connects to the EC2 Public IP via HTTP. The Nginx gateway container (`watchlist-frontend`) intercepts the request on public **Port 80** and delivers the static bundle (`index.html`, `script.js`, and styling) directly to the client browser. |
 | **2 — Local Client Execution** | The UI code executes entirely within the user's browser RAM on their local machine, operating detached from the cloud system's core kernel. |
 | **3 — Proxy Entry Point** | When a user clicks **"Add Movie"**, the browser transmits an HTTP request to the relative path `/api/movies`. Because this path is relative, the traffic routes back directly to Nginx on public **Port 80**. |
@@ -25,8 +44,6 @@ The application workspace operates on a dual-pane layout: a dynamic movie manage
 | **5 — Isolated Database Transaction** | The Node.js API container (`watchlist-backend`) handles the operation, sanitizes input parameters, and establishes a secure socket pipeline to the PostgreSQL database container (`postgres-db`) on private **Port 5432**. |
 
 ---
-
-
 
 ## ⚙️ Component Blueprint & Port Matrix
 
@@ -37,6 +54,14 @@ The application workspace operates on a dual-pane layout: a dynamic movie manage
 | **Database Vault** | `postgres-db` | *None* — **Strictly Closed** | ✅ Connected | Houses sensitive persistent application data records |
 
 > 🔒 **Security Win:** `watchlist-backend` and `postgres-db` map **no host ports** — they are invisible to external internet port scanners and brute-force arrays.
+
+### Module-by-Module Breakdown
+
+- **`watchlist-frontend` (Nginx Proxy):** Exposes **Port 80** to the public internet to deliver static assets and catch all user interactions. It handles reverse proxy routing, meaning the browser never talks directly to the backend. Maps host port `80` to container port `80`.
+
+- **`watchlist-backend` (Node.js API):** Runs application logic and handles database queries on internal **Port 5000**. Its host port is **strictly closed** to the public internet — it can only receive clean traffic passed forward by the Nginx gateway over the internal virtual network.
+
+- **`postgres-db` (PostgreSQL Vault):** Runs on internal **Port 5432** with its host port **completely closed** to the outside world. This creates an airtight security vault where only the backend container can see or talk to it across the isolated Docker network bridge.
 
 ---
 
@@ -70,7 +95,7 @@ Houses the core routing rule that shifts traffic across the boundary layer.
 Since Nginx handles all public interface tasks, minimize your EC2 Inbound Security Group Rules to the following:
 
 | Port | Protocol | Source | Purpose |
-|------|----------|--------|---------|
+|:-----|:---------|:-------|:--------|
 | `22` | SSH | Your IP only | Terminal administration |
 | `80` | HTTP | `0.0.0.0/0` | Client access to the app |
 | `5000` | Custom TCP | — | ❌ Can be completely deleted |
@@ -105,20 +130,22 @@ Build images, create the network layer, and spin up all containers in the backgr
 docker compose up -d --build
 ```
 
+![Compose Build Success](.\ss\compose_build.png)
+
 ---
-
-![Docker Compose Build](ss\compose_build.png)
-
 
 ## 🔍 Verification & Diagnostics
 
 **Check container status — confirm only Port 80 is mapped to the public host:**
+
 ```bash
 docker compose ps
 ```
-![Docker Compose PS](ss\compose_ps.png)
+
+![Docker Compose PS](.\ss\compose_ps.png)
 
 **Stream live backend logs through the reverse proxy:**
+
 ```bash
 docker compose logs watchlist-backend
 ```
