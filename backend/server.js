@@ -9,10 +9,7 @@ app.use(express.json());
 // Connect to PostgreSQL using Docker's internal networking
 // "postgres-db" will be the container name we use later
 const pool = new Pool({
-  host: 'postgres-db', 
-  user: process.env.POSTGRES_USER || 'admin',
-  password: process.env.POSTGRES_PASSWORD || 'Fuckcomviva',
-  database: process.env.POSTGRES_DB || 'watchlist_db',
+  host: 'postgres-db',
   port: 5432,
 });
 
