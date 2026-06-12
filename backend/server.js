@@ -10,6 +10,9 @@ app.use(express.json());
 // "postgres-db" will be the container name we use later
 const pool = new Pool({
   host: 'postgres-db',
+  user: process.env.POSTGRES_USER,
+password: process.env.POSTGRES_PASSWORD,
+database: process.env.POSTGRES_DB,
   port: 5432,
 });
 
