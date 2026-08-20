@@ -1,20 +1,21 @@
-# Step 1: Use an official lightweight Node.js runtime as the base image
-FROM node:20-alpine
-
-# Step 2: Set the working directory inside the container
+# ---- Stage 1: install production dependencies ----
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Step 3: Copy package configuration files to install dependencies first
+# Install only production deps in an isolated stage so npm's cache and
+# any build-time cruft never reach the final image.
 COPY package*.json ./
+RUN npm install --omit=dev
 
-# Step 4: Install the node modules required for the app
-RUN npm install
+# ---- Stage 2: minimal runtime image ----
+FROM node:20-alpine
+WORKDIR /app
 
-# Step 5: Copy the rest of your application code into the container
-COPY . .
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+COPY --chown=node:node . .
 
-# Step 6: Inform Docker that the container listens on port 5000 at runtime
+USER node
+
 EXPOSE 5000
 
-# Step 7: Define the command to execute your app when the container boots
 CMD ["npm", "start"]
